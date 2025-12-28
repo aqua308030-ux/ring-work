@@ -68,10 +68,10 @@
                     <h3>基本情報</h3>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="driver-select">ドライバー選択 <span class="required">*</span></label>
-                            <select id="driver-select" required>
-                                <option value="">選択してください</option>
-                            </select>
+                            <label for="driver-select">ドライバー名 <span class="required">*</span></label>
+                            <input type="text" id="driver-select" list="driver-list" required placeholder="ドライバー名を入力または選択">
+                            <datalist id="driver-list">
+                            </datalist>
                         </div>
                     </div>
                     <div class="form-row">

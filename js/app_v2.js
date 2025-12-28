@@ -226,25 +226,33 @@ function renderDriversList() {
  * ドライバーセレクト更新
  */
 function updateDriverSelects() {
-    const selects = ['driver-select', 'filter-driver'];
+    // driver-select (datalist) の更新
+    const driverInput = document.getElementById('driver-select');
+    const driverList = document.getElementById('driver-list');
+    if (driverInput && driverList) {
+        const currentValue = driverInput.value;
+        driverList.innerHTML = currentDrivers
+            .filter(driver => driver.active !== false)
+            .map(driver => `<option value="${driver.name}" data-id="${driver.id}"></option>`)
+            .join('');
+        if (currentValue) {
+            driverInput.value = currentValue;
+        }
+    }
     
-    selects.forEach(selectId => {
-        const select = document.getElementById(selectId);
-        if (!select) return;
-        
-        const currentValue = select.value;
-        const isFilter = selectId === 'filter-driver';
-        
-        select.innerHTML = `<option value="">${isFilter ? 'すべて' : '選択してください'}</option>` +
+    // filter-driver (select) の更新
+    const filterSelect = document.getElementById('filter-driver');
+    if (filterSelect) {
+        const currentValue = filterSelect.value;
+        filterSelect.innerHTML = `<option value="">すべて</option>` +
             currentDrivers
                 .filter(driver => driver.active !== false)
                 .map(driver => `<option value="${driver.id}">${driver.name}</option>`)
                 .join('');
-        
         if (currentValue) {
-            select.value = currentValue;
+            filterSelect.value = currentValue;
         }
-    });
+    }
 }
 
 /**
@@ -622,11 +630,17 @@ function calculateRowAmount(rowId) {
  * ドライバー選択時の処理
  */
 function handleDriverSelect() {
-    const driverId = document.getElementById('driver-select').value;
-    if (!driverId) return;
+    const driverName = document.getElementById('driver-select').value;
+    if (!driverName) return;
     
-    const driver = currentDrivers.find(d => d.id === driverId);
-    if (!driver) return;
+    // 名前でドライバーを検索
+    const driver = currentDrivers.find(d => d.name === driverName);
+    if (!driver) {
+        // フリー入力の場合は控除情報をクリア
+        document.getElementById('insurance-fee').value = 0;
+        document.getElementById('vehicle-lease-fee').value = 0;
+        return;
+    }
     
     // リース情報を自動入力
     document.getElementById('insurance-fee').value = driver.insurance_fee || 0;
@@ -679,17 +693,15 @@ function calculatePayslip() {
 async function handlePayslipFormSubmit(e) {
     e.preventDefault();
     
-    const driverId = document.getElementById('driver-select').value;
-    if (!driverId) {
-        alert('ドライバーを選択してください');
+    const driverName = document.getElementById('driver-select').value;
+    if (!driverName) {
+        alert('ドライバー名を入力してください');
         return;
     }
     
-    const driver = currentDrivers.find(d => d.id === driverId);
-    if (!driver) {
-        alert('選択されたドライバーが見つかりません');
-        return;
-    }
+    // 名前でドライバーを検索（フリー入力も許可）
+    const driver = currentDrivers.find(d => d.name === driverName);
+    const driverId = driver ? driver.id : generateUUID(); // フリー入力の場合は新規ID生成
     
     // 作業明細の収集
     const workDetails = [];
@@ -736,7 +748,7 @@ async function handlePayslipFormSubmit(e) {
     const payslipData = {
         id: generateUUID(),
         driver_id: driverId,
-        driver_name: driver.name,
+        driver_name: driverName,
         company_name: document.getElementById('company-name').value,
         center_name: document.getElementById('center-name').value,
         year: Number(document.getElementById('payslip-year').value),
