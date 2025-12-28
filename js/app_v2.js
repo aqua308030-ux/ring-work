@@ -4,7 +4,7 @@
  */
 
 // ==================== 定数 ====================
-const API_BASE_URL = '/tables';
+const API_BASE_URL = '/api/tables';
 const TABLES = {
     DRIVERS: 'drivers_v3',
     DELIVERY_TYPES: 'delivery_types',
