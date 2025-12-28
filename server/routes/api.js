@@ -10,9 +10,9 @@ const router = express.Router();
 
 // 簡易的なメモリストレージ（本番環境では実際のデータベースを使用）
 const storage = {
-    drivers: new Map(),
+    drivers_v3: new Map(),
     delivery_types: new Map(),
-    payslips: new Map()
+    payslips_v4: new Map()
 };
 
 /**
@@ -129,7 +129,7 @@ router.get('/driver/payslips', authMiddleware, asyncHandler(async (req, res) => 
     }
     
     const driverId = req.user.driver_id;
-    const allPayslips = Array.from(storage.payslips.values());
+    const allPayslips = Array.from(storage.payslips_v4.values());
     const driverPayslips = allPayslips.filter(p => p.driver_id === driverId);
     
     res.json({
@@ -150,7 +150,7 @@ router.get('/driver/info', authMiddleware, asyncHandler(async (req, res) => {
     }
     
     const driverId = req.user.driver_id;
-    const driver = storage.drivers.get(driverId);
+    const driver = storage.drivers_v3.get(driverId);
     
     if (!driver) {
         return res.status(404).json({
