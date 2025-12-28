@@ -1,0 +1,126 @@
+{
+  "name": "payslips_v4",
+  "description": "給料明細テーブル（バージョン4）",
+  "fields": [
+    {
+      "name": "id",
+      "type": "text",
+      "description": "明細ID（UUID）",
+      "required": true
+    },
+    {
+      "name": "driver_id",
+      "type": "text",
+      "description": "ドライバーID（外部キー）",
+      "required": true
+    },
+    {
+      "name": "driver_name",
+      "type": "text",
+      "description": "ドライバー名",
+      "required": true
+    },
+    {
+      "name": "company_name",
+      "type": "text",
+      "description": "会社名"
+    },
+    {
+      "name": "center_name",
+      "type": "text",
+      "description": "担当センター"
+    },
+    {
+      "name": "year",
+      "type": "number",
+      "description": "年（YYYY）",
+      "required": true
+    },
+    {
+      "name": "month",
+      "type": "number",
+      "description": "月（MM）",
+      "required": true
+    },
+    {
+      "name": "period_start",
+      "type": "text",
+      "description": "集計期間開始日（YYYY-MM-DD）"
+    },
+    {
+      "name": "period_end",
+      "type": "text",
+      "description": "集計期間終了日（YYYY-MM-DD）"
+    },
+    {
+      "name": "subtotal",
+      "type": "number",
+      "description": "作業小計（税抜・円）"
+    },
+    {
+      "name": "consumption_tax",
+      "type": "number",
+      "description": "内消費税（10%対象・円）"
+    },
+    {
+      "name": "work_total",
+      "type": "number",
+      "description": "作業合計（税込・円）"
+    },
+    {
+      "name": "transfer_fee",
+      "type": "number",
+      "description": "振込手数料（円）"
+    },
+    {
+      "name": "insurance_fee",
+      "type": "number",
+      "description": "保険料（円）"
+    },
+    {
+      "name": "vehicle_lease_fee",
+      "type": "number",
+      "description": "車両リース代（円）"
+    },
+    {
+      "name": "advance_payment",
+      "type": "number",
+      "description": "前借り（円）"
+    },
+    {
+      "name": "other_deduction_name",
+      "type": "text",
+      "description": "その他控除名（例: 燃料費）"
+    },
+    {
+      "name": "other_deductions",
+      "type": "number",
+      "description": "その他控除金額（円）"
+    },
+    {
+      "name": "total_deductions",
+      "type": "number",
+      "description": "控除合計（円）"
+    },
+    {
+      "name": "net_pay",
+      "type": "number",
+      "description": "差引支給額（円）"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "description": "備考"
+    },
+    {
+      "name": "work_details",
+      "type": "array",
+      "description": "作業明細（JSON配列）"
+    },
+    {
+      "name": "created_at",
+      "type": "text",
+      "description": "作成日時（ISO 8601）"
+    }
+  ]
+}

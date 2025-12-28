@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>軽貨物ドライバー給料明細管理システム V2.2</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style_v2.css">
+</head>
+<body>
+    <div class="container">
+        <!-- ヘッダー -->
+        <header class="header">
+            <h1><i class="fas fa-calculator"></i> 軽貨物ドライバー給料明細管理システム V2.2</h1>
+        </header>
+
+        <!-- タブナビゲーション -->
+        <nav class="tabs">
+            <button class="tab-btn active" data-tab="drivers">
+                <i class="fas fa-user"></i> ドライバー管理
+            </button>
+            <button class="tab-btn" data-tab="delivery-types">
+                <i class="fas fa-truck"></i> 配送タイプ管理
+            </button>
+            <button class="tab-btn" data-tab="create-payslip">
+                <i class="fas fa-file-invoice"></i> 給料明細作成
+            </button>
+            <button class="tab-btn" data-tab="payslips">
+                <i class="fas fa-list"></i> 明細一覧
+            </button>
+        </nav>
+
+        <!-- タブコンテンツ -->
+        <div class="tab-content active" id="drivers-tab">
+            <div class="section-header">
+                <h2>ドライバー管理</h2>
+                <button class="btn btn-primary" id="add-driver-btn">
+                    <i class="fas fa-plus"></i> 新規ドライバー登録
+                </button>
+            </div>
+            <div id="drivers-list" class="cards-grid"></div>
+        </div>
+
+        <div class="tab-content" id="delivery-types-tab">
+            <div class="section-header">
+                <h2>配送タイプ管理</h2>
+                <button class="btn btn-primary" id="add-delivery-type-btn">
+                    <i class="fas fa-plus"></i> 新規配送タイプ登録
+                </button>
+            </div>
+            <div id="delivery-types-list" class="cards-grid"></div>
+        </div>
+
+        <div class="tab-content" id="create-payslip-tab">
+            <h2>給料明細作成</h2>
+            <form id="payslip-form" class="form">
+                <!-- 基本情報 -->
+                <div class="form-section">
+                    <h3>基本情報</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="driver-select">ドライバー選択 <span class="required">*</span></label>
+                            <select id="driver-select" required>
+                                <option value="">選択してください</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="company-name">会社名</label>
+                            <input type="text" id="company-name" placeholder="例: ○○運送株式会社">
+                        </div>
+                        <div class="form-group">
+                            <label for="center-name">担当センター</label>
+                            <input type="text" id="center-name" placeholder="例: 新宿センター">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="payslip-year">年 <span class="required">*</span></label>
+                            <input type="number" id="payslip-year" min="2020" max="2100" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="payslip-month">月 <span class="required">*</span></label>
+                            <select id="payslip-month" required>
+                                <option value="1">1月</option>
+                                <option value="2">2月</option>
+                                <option value="3">3月</option>
+                                <option value="4">4月</option>
+                                <option value="5">5月</option>
+                                <option value="6">6月</option>
+                                <option value="7">7月</option>
+                                <option value="8">8月</option>
+                                <option value="9">9月</option>
+                                <option value="10">10月</option>
+                                <option value="11">11月</option>
+                                <option value="12">12月</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="period-start">集計期間開始日 <span class="required">*</span></label>
+                            <input type="date" id="period-start" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="period-end">集計期間終了日 <span class="required">*</span></label>
+                            <input type="date" id="period-end" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 作業明細 -->
+                <div class="form-section">
+                    <h3>作業明細</h3>
+                    <div id="work-details-container"></div>
+                    <button type="button" class="btn btn-secondary" id="add-work-detail-btn">
+                        <i class="fas fa-plus"></i> 作業明細を追加
+                    </button>
+                </div>
+
+                <!-- 計算結果（作業合計） -->
+                <div class="form-section">
+                    <h3>作業合計</h3>
+                    <div class="calculation-result">
+                        <div class="calc-row">
+                            <span>作業小計（税抜）:</span>
+                            <span id="subtotal-display">¥0</span>
+                        </div>
+                        <div class="calc-row">
+                            <span>内消費税（10%対象）:</span>
+                            <span id="consumption-tax-display">¥0</span>
+                        </div>
+                        <div class="calc-row total">
+                            <span>作業合計（税込10%対象）:</span>
+                            <span id="work-total-display">¥0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 控除情報 -->
+                <div class="form-section">
+                    <h3>控除明細</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="transfer-fee">振込手数料（円）</label>
+                            <input type="number" id="transfer-fee" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="insurance-fee">保険料（円）</label>
+                            <input type="number" id="insurance-fee" min="0" value="0" readonly>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="vehicle-lease-fee">車両リース代（円）</label>
+                            <input type="number" id="vehicle-lease-fee" min="0" value="0" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="advance-payment">前借り（円）</label>
+                            <input type="number" id="advance-payment" min="0" value="0">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="other-deduction-name">その他控除名</label>
+                            <input type="text" id="other-deduction-name" placeholder="例: 燃料費、駐車場代">
+                        </div>
+                        <div class="form-group">
+                            <label for="other-deductions">その他控除（円）</label>
+                            <input type="number" id="other-deductions" min="0" value="0">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 計算結果（控除・支給額） -->
+                <div class="form-section">
+                    <h3>支給額計算</h3>
+                    <div class="calculation-result">
+                        <div class="calc-row">
+                            <span>控除合計:</span>
+                            <span id="total-deductions-display">¥0</span>
+                        </div>
+                        <div class="calc-row total">
+                            <span>差引支給額:</span>
+                            <span id="net-pay-display" class="highlight">¥0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 備考 -->
+                <div class="form-section">
+                    <h3>備考</h3>
+                    <div class="form-group">
+                        <textarea id="payslip-notes" rows="3" placeholder="備考を入力してください"></textarea>
+                    </div>
+                </div>
+
+                <!-- アクションボタン -->
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="calculate-btn">
+                        <i class="fas fa-calculator"></i> 計算
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                    <button type="button" class="btn btn-danger" id="reset-form-btn">
+                        <i class="fas fa-redo"></i> リセット
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <div class="tab-content" id="payslips-tab">
+            <div class="section-header">
+                <h2>明細一覧</h2>
+            </div>
+            
+            <!-- フィルター -->
+            <div class="filters">
+                <div class="form-group">
+                    <label for="filter-driver">ドライバー</label>
+                    <select id="filter-driver">
+                        <option value="">すべて</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-year">年</label>
+                    <select id="filter-year">
+                        <option value="">すべて</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="filter-month">月</label>
+                    <select id="filter-month">
+                        <option value="">すべて</option>
+                        <option value="1">1月</option>
+                        <option value="2">2月</option>
+                        <option value="3">3月</option>
+                        <option value="4">4月</option>
+                        <option value="5">5月</option>
+                        <option value="6">6月</option>
+                        <option value="7">7月</option>
+                        <option value="8">8月</option>
+                        <option value="9">9月</option>
+                        <option value="10">10月</option>
+                        <option value="11">11月</option>
+                        <option value="12">12月</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary" id="apply-filters-btn">
+                    <i class="fas fa-filter"></i> フィルター適用
+                </button>
+            </div>
+            
+            <div id="payslips-list" class="cards-grid"></div>
+        </div>
+    </div>
+
+    <!-- ドライバー登録/編集モーダル -->
+    <div id="driver-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="driver-modal-title">ドライバー登録</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="driver-form" class="form">
+                <input type="hidden" id="driver-id">
+                
+                <!-- 基本情報 -->
+                <div class="form-section">
+                    <h3>基本情報</h3>
+                    <div class="form-group">
+                        <label for="driver-name">氏名 <span class="required">*</span></label>
+                        <input type="text" id="driver-name" required placeholder="例: 實方 徹">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="driver-phone">電話番号</label>
+                            <input type="tel" id="driver-phone" placeholder="例: 090-1234-5678">
+                        </div>
+                        <div class="form-group">
+                            <label for="driver-email">メールアドレス</label>
+                            <input type="email" id="driver-email" placeholder="例: driver@example.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 銀行口座情報 -->
+                <div class="form-section">
+                    <h3>銀行口座情報</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bank-name">銀行名</label>
+                            <input type="text" id="bank-name" placeholder="例: 三菱UFJ銀行">
+                        </div>
+                        <div class="form-group">
+                            <label for="branch-name">支店名</label>
+                            <input type="text" id="branch-name" placeholder="例: 新宿支店">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="account-type">口座種別</label>
+                            <select id="account-type">
+                                <option value="">選択してください</option>
+                                <option value="普通">普通</option>
+                                <option value="当座">当座</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="account-number">口座番号</label>
+                            <input type="text" id="account-number" pattern="[0-9]{7}" maxlength="7" placeholder="7桁の数字">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="account-holder">口座名義（カタカナ）</label>
+                        <input type="text" id="account-holder" placeholder="例: サネガタ トオル">
+                    </div>
+                </div>
+
+                <!-- リース契約情報 -->
+                <div class="form-section">
+                    <h3>リース契約情報</h3>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="has-lease">
+                            リース契約あり
+                        </label>
+                    </div>
+                    <div id="lease-details" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="insurance-fee-input">月額保険料（円）</label>
+                                <input type="number" id="insurance-fee-input" min="0" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label for="vehicle-lease-fee-input">月額車両リース代（円）</label>
+                                <input type="number" id="vehicle-lease-fee-input" min="0" value="0">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="vehicle-number">車両ナンバー</label>
+                            <input type="text" id="vehicle-number" placeholder="例: 品川 500 あ 12-34">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 備考 -->
+                <div class="form-section">
+                    <h3>備考</h3>
+                    <div class="form-group">
+                        <textarea id="driver-notes" rows="3" placeholder="備考を入力してください"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                    <button type="button" class="btn btn-secondary modal-close">
+                        <i class="fas fa-times"></i> キャンセル
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 配送タイプ登録/編集モーダル -->
+    <div id="delivery-type-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="delivery-type-modal-title">配送タイプ登録</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <form id="delivery-type-form" class="form">
+                <input type="hidden" id="delivery-type-id">
+                
+                <div class="form-group">
+                    <label for="delivery-type-name">配送タイプ名 <span class="required">*</span></label>
+                    <input type="text" id="delivery-type-name" required placeholder="例: ヤマト宅急便">
+                </div>
+                
+                <div class="form-group">
+                    <label for="unit-price">単価（円/個） <span class="required">*</span></label>
+                    <input type="number" id="unit-price" min="0" required placeholder="例: 180">
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存
+                    </button>
+                    <button type="button" class="btn btn-secondary modal-close">
+                        <i class="fas fa-times"></i> キャンセル
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 明細詳細モーダル -->
+    <div id="payslip-detail-modal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>給料明細詳細</h2>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div id="payslip-detail-content"></div>
+            <div class="form-actions">
+                <button class="btn btn-primary" id="print-payslip-btn">
+                    <i class="fas fa-print"></i> 印刷
+                </button>
+                <button class="btn btn-danger" id="delete-payslip-btn">
+                    <i class="fas fa-trash"></i> 削除
+                </button>
+                <button class="btn btn-secondary modal-close">
+                    <i class="fas fa-times"></i> 閉じる
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 印刷用レイアウト -->
+    <div id="print-layout" class="print-only"></div>
+
+    <!-- Custom JavaScript -->
+    <script src="js/app_v2.js"></script>
+</body>
+</html>

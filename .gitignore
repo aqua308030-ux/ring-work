@@ -1,0 +1,37 @@
+# 依存関係
+node_modules/
+package-lock.json
+
+# 環境変数
+.env
+.env.local
+.env.production
+
+# ログファイル
+*.log
+logs/
+
+# 一時ファイル
+tmp/
+temp/
+/tmp/payslips/*
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# エディタ
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# テストカバレッジ
+coverage/
+
+# ビルド成果物
+dist/
+build/

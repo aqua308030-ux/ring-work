@@ -1,0 +1,29 @@
+{
+  "name": "delivery_types",
+  "description": "配送タイプマスタテーブル",
+  "fields": [
+    {
+      "name": "id",
+      "type": "text",
+      "description": "配送タイプID（UUID）",
+      "required": true
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "description": "配送タイプ名（例: ヤマト宅急便）",
+      "required": true
+    },
+    {
+      "name": "unit_price",
+      "type": "number",
+      "description": "単価（円/個）",
+      "required": true
+    },
+    {
+      "name": "active",
+      "type": "bool",
+      "description": "有効フラグ"
+    }
+  ]
+}
