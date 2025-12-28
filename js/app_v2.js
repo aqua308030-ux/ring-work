@@ -1150,6 +1150,85 @@ function printPayslip() {
     window.print();
 }
 
+/**
+ * メール送信モーダルを開く
+ */
+function openEmailModal() {
+    if (!selectedPayslipId) return;
+    
+    const payslip = currentPayslips.find(p => p.id === selectedPayslipId);
+    if (!payslip) return;
+    
+    // ドライバーのメールアドレスを検索
+    const driver = currentDrivers.find(d => d.name === payslip.driver_name);
+    const emailTo = document.getElementById('email-to');
+    
+    if (driver && driver.email) {
+        emailTo.value = driver.email;
+    } else {
+        emailTo.value = '';
+    }
+    
+    // 件名を設定
+    document.getElementById('email-subject').value = `【給料明細】${payslip.year}年${payslip.month}月分`;
+    
+    // メッセージを設定
+    document.getElementById('email-message').value = `${payslip.driver_name} 様
+
+お疲れ様です。
+${payslip.year}年${payslip.month}月分の給料明細をお送りいたします。
+
+ご確認のほど、よろしくお願いいたします。
+
+【支給額】
+差引支給額: ${formatCurrency(payslip.net_pay)}
+
+集計期間: ${formatDate(payslip.period_start)} 〜 ${formatDate(payslip.period_end)}`;
+    
+    showModal('email-modal');
+}
+
+/**
+ * メール送信フォーム送信
+ */
+async function handleEmailFormSubmit(e) {
+    e.preventDefault();
+    
+    if (!selectedPayslipId) return;
+    
+    const payslip = currentPayslips.find(p => p.id === selectedPayslipId);
+    if (!payslip) return;
+    
+    const emailData = {
+        to: document.getElementById('email-to').value,
+        subject: document.getElementById('email-subject').value,
+        message: document.getElementById('email-message').value,
+        payslip: payslip
+    };
+    
+    try {
+        // バックエンドAPIにメール送信リクエスト
+        const response = await fetch('/api/email/send-payslip', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(emailData)
+        });
+        
+        if (!response.ok) {
+            throw new Error('メール送信に失敗しました');
+        }
+        
+        const result = await response.json();
+        alert('メールを送信しました');
+        hideModal('email-modal');
+    } catch (error) {
+        console.error('メール送信エラー:', error);
+        alert('メール送信に失敗しました。メールサーバーの設定を確認してください。\n\n注意: この機能を使用するには、バックエンドサーバーでメール設定が必要です。');
+    }
+}
+
 // ==================== 初期化 ====================
 
 /**
@@ -1213,7 +1292,9 @@ async function initializeApp() {
     // 明細一覧
     document.getElementById('apply-filters-btn')?.addEventListener('click', renderPayslipsList);
     document.getElementById('print-payslip-btn')?.addEventListener('click', printPayslip);
+    document.getElementById('email-payslip-btn')?.addEventListener('click', openEmailModal);
     document.getElementById('delete-payslip-btn')?.addEventListener('click', deletePayslip);
+    document.getElementById('email-form')?.addEventListener('submit', handleEmailFormSubmit);
     
     // データ読み込み
     await Promise.all([
