@@ -140,6 +140,11 @@ body {
     gap: 8px;
 }
 
+/* キャンセルボタンのフォントサイズを小さく */
+.btn-secondary {
+    font-size: 13px;
+}
+
 .btn:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
