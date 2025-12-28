@@ -396,6 +396,12 @@ body {
     flex-wrap: wrap;
 }
 
+.form-actions .btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+}
+
 /* フィルター */
 .filters {
     display: flex;
