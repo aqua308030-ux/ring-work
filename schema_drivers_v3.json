@@ -1,0 +1,83 @@
+{
+  "name": "drivers_v3",
+  "description": "軽貨物ドライバー基本情報テーブル（バージョン3）",
+  "fields": [
+    {
+      "name": "id",
+      "type": "text",
+      "description": "ドライバーID（UUID）",
+      "required": true
+    },
+    {
+      "name": "name",
+      "type": "text",
+      "description": "氏名",
+      "required": true
+    },
+    {
+      "name": "phone",
+      "type": "text",
+      "description": "電話番号"
+    },
+    {
+      "name": "email",
+      "type": "text",
+      "description": "メールアドレス（PDF送信用）"
+    },
+    {
+      "name": "bank_name",
+      "type": "text",
+      "description": "銀行名"
+    },
+    {
+      "name": "branch_name",
+      "type": "text",
+      "description": "支店名"
+    },
+    {
+      "name": "account_type",
+      "type": "text",
+      "description": "口座種別（普通/当座）"
+    },
+    {
+      "name": "account_number",
+      "type": "text",
+      "description": "口座番号（7桁）"
+    },
+    {
+      "name": "account_holder",
+      "type": "text",
+      "description": "口座名義（カタカナ）"
+    },
+    {
+      "name": "has_lease",
+      "type": "bool",
+      "description": "リース契約有無"
+    },
+    {
+      "name": "insurance_fee",
+      "type": "number",
+      "description": "月額保険料（円）"
+    },
+    {
+      "name": "vehicle_lease_fee",
+      "type": "number",
+      "description": "月額車両リース代（円）"
+    },
+    {
+      "name": "vehicle_number",
+      "type": "text",
+      "description": "車両ナンバー（例: 品川 500 あ 12-34）"
+    },
+    {
+      "name": "notes",
+      "type": "text",
+      "description": "備考"
+    },
+    {
+      "name": "active",
+      "type": "bool",
+      "description": "有効フラグ"
+    }
+  ]
+}
