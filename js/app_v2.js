@@ -1350,3 +1350,193 @@ async function initializeApp() {
 
 // ページ読み込み完了時に初期化
 document.addEventListener('DOMContentLoaded', initializeApp);
+
+// ==================== チャット機能 ====================
+
+let currentChatDriver = null;
+let chatMessages = {}; // { driverId: [ {text, sender, timestamp}, ... ] }
+
+/**
+ * チャットドライバーリスト表示
+ */
+function renderChatDriverList() {
+    const container = document.getElementById('chat-driver-list');
+    if (!container) return;
+    
+    const activeDrivers = currentDrivers.filter(d => d.active !== false);
+    
+    if (activeDrivers.length === 0) {
+        container.innerHTML = '<p class="text-center" style="padding: 20px;">登録されているドライバーはありません</p>';
+        return;
+    }
+    
+    container.innerHTML = activeDrivers.map(driver => {
+        const messages = chatMessages[driver.id] || [];
+        const lastMessage = messages.length > 0 ? messages[messages.length - 1] : null;
+        const initial = driver.name ? driver.name[0] : '?';
+        
+        return `
+            <div class="chat-driver-item" data-driver-id="${driver.id}">
+                <div class="chat-driver-name">${driver.name}</div>
+                <div class="chat-driver-last-message">
+                    ${lastMessage ? lastMessage.text.substring(0, 30) + '...' : 'メッセージなし'}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // クリックイベントを設定
+    container.querySelectorAll('.chat-driver-item').forEach(item => {
+        item.addEventListener('click', () => {
+            const driverId = item.dataset.driverId;
+            selectChatDriver(driverId);
+        });
+    });
+}
+
+/**
+ * チャットドライバーを選択
+ */
+function selectChatDriver(driverId) {
+    const driver = currentDrivers.find(d => d.id === driverId);
+    if (!driver) return;
+    
+    currentChatDriver = driver;
+    
+    // アクティブ状態を更新
+    document.querySelectorAll('.chat-driver-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.dataset.driverId === driverId) {
+            item.classList.add('active');
+        }
+    });
+    
+    // ヘッダーを更新
+    const header = document.getElementById('chat-header');
+    if (header) {
+        const initial = driver.name ? driver.name[0] : '?';
+        header.innerHTML = `
+            <div class="chat-header-info">
+                <div class="chat-message-avatar">${initial}</div>
+                <span>${driver.name}</span>
+            </div>
+        `;
+    }
+    
+    // メッセージを表示
+    renderChatMessages();
+}
+
+/**
+ * チャットメッセージ表示
+ */
+function renderChatMessages() {
+    const container = document.getElementById('chat-messages');
+    if (!container || !currentChatDriver) return;
+    
+    const messages = chatMessages[currentChatDriver.id] || [];
+    
+    if (messages.length === 0) {
+        container.innerHTML = '<p class="text-center" style="color: var(--text-secondary); padding: 40px;">まだメッセージがありません</p>';
+        return;
+    }
+    
+    container.innerHTML = messages.map(msg => {
+        const isSent = msg.sender === 'admin';
+        const initial = isSent ? '管' : (currentChatDriver.name ? currentChatDriver.name[0] : '?');
+        const time = new Date(msg.timestamp).toLocaleString('ja-JP', {
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        return `
+            <div class="chat-message ${isSent ? 'sent' : 'received'}">
+                <div class="chat-message-avatar">${initial}</div>
+                <div class="chat-message-content">
+                    <div class="chat-message-bubble">
+                        <div class="chat-message-text">${msg.text}</div>
+                    </div>
+                    <div class="chat-message-time">${time}</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // 最新メッセージまでスクロール
+    container.scrollTop = container.scrollHeight;
+}
+
+/**
+ * メッセージ送信
+ */
+function sendChatMessage() {
+    const input = document.getElementById('chat-input');
+    if (!input || !currentChatDriver) return;
+    
+    const text = input.value.trim();
+    if (!text) return;
+    
+    // メッセージを追加
+    if (!chatMessages[currentChatDriver.id]) {
+        chatMessages[currentChatDriver.id] = [];
+    }
+    
+    chatMessages[currentChatDriver.id].push({
+        text: text,
+        sender: 'admin',
+        timestamp: new Date().toISOString()
+    });
+    
+    // 入力欄をクリア
+    input.value = '';
+    
+    // メッセージを表示
+    renderChatMessages();
+    
+    // ドライバーリストを更新（最新メッセージを反映）
+    renderChatDriverList();
+    
+    // 選択状態を維持
+    selectChatDriver(currentChatDriver.id);
+}
+
+/**
+ * チャット検索
+ */
+function searchChatDrivers() {
+    const searchInput = document.getElementById('chat-search-input');
+    if (!searchInput) return;
+    
+    const query = searchInput.value.toLowerCase();
+    
+    document.querySelectorAll('.chat-driver-item').forEach(item => {
+        const driverId = item.dataset.driverId;
+        const driver = currentDrivers.find(d => d.id === driverId);
+        
+        if (driver && driver.name.toLowerCase().includes(query)) {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// チャット機能の初期化イベント
+document.getElementById('send-message-btn')?.addEventListener('click', sendChatMessage);
+document.getElementById('chat-input')?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && e.ctrlKey) {
+        sendChatMessage();
+    }
+});
+document.getElementById('chat-search-input')?.addEventListener('input', searchChatDrivers);
+
+// タブ切り替え時にチャットを初期化
+const originalSwitchTab = switchTab;
+switchTab = function(tabName) {
+    originalSwitchTab(tabName);
+    if (tabName === 'chat') {
+        renderChatDriverList();
+    }
+};
