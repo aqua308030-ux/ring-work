@@ -16,6 +16,7 @@ const path = require('path');
 const authRoutes = require('./routes/auth');
 const pdfRoutes = require('./routes/pdf');
 const emailRoutes = require('./routes/email');
+const chatRoutes = require('./routes/chat');
 const apiRoutes = require('./routes/api');
 
 // ミドルウェアのインポート
@@ -67,6 +68,7 @@ app.use(express.static(path.join(__dirname, '..')));
 app.use('/api/auth', authRoutes);
 app.use('/api/pdf', authMiddleware, pdfRoutes);
 app.use('/api/email', authMiddleware, emailRoutes);
+app.use('/api/chat', chatRoutes);
 app.use('/api', apiRoutes);
 
 // ヘルスチェック
