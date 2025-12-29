@@ -31,8 +31,34 @@ function createTransporter() {
 /**
  * 給料明細メールを送信
  */
-async function sendPayslipEmail({ to, driverName, year, month, pdfBuffer }) {
+async function sendPayslipEmail({ to, driverName, year, month, pdfBuffer, customMessage }) {
     const transporter = createTransporter();
+    
+    // カスタムメッセージがある場合はそれを使用、ない場合はデフォルトメッセージ
+    const messageContent = customMessage ? `
+        <p style="white-space: pre-wrap; background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0;">
+            ${customMessage.replace(/\n/g, '<br>')}
+        </p>
+    ` : `
+        <p>
+            いつもお疲れ様です。<br>
+            ${year}年${month}月分の給料明細書を添付ファイルにてお送りいたします。
+        </p>
+        
+        <div class="info-box">
+            <div class="info-item">
+                <span class="info-label">対象期間:</span> ${year}年${month}月
+            </div>
+            <div class="info-item">
+                <span class="info-label">ファイル:</span> PDF形式（添付ファイル）
+            </div>
+        </div>
+        
+        <p>
+            添付のPDFファイルをご確認ください。<br>
+            ご不明な点がございましたら、お気軽にお問い合わせください。
+        </p>
+    `;
     
     const mailOptions = {
         from: process.env.EMAIL_FROM || 'noreply@example.com',
@@ -120,24 +146,7 @@ async function sendPayslipEmail({ to, driverName, year, month, pdfBuffer }) {
             ${driverName} 様
         </div>
         
-        <p>
-            いつもお疲れ様です。<br>
-            ${year}年${month}月分の給料明細書を添付ファイルにてお送りいたします。
-        </p>
-        
-        <div class="info-box">
-            <div class="info-item">
-                <span class="info-label">対象期間:</span> ${year}年${month}月
-            </div>
-            <div class="info-item">
-                <span class="info-label">ファイル:</span> PDF形式（添付ファイル）
-            </div>
-        </div>
-        
-        <p>
-            添付のPDFファイルをご確認ください。<br>
-            ご不明な点がございましたら、お気軽にお問い合わせください。
-        </p>
+        ${messageContent}
     </div>
     
     <div class="footer">

@@ -13,7 +13,7 @@ const router = express.Router();
  * 給料明細をメール送信
  */
 router.post('/send-payslip', asyncHandler(async (req, res) => {
-    const { payslip, driverEmail } = req.body;
+    const { payslip, driverEmail, customMessage } = req.body;
     
     if (!payslip || !driverEmail) {
         return res.status(400).json({
@@ -31,7 +31,8 @@ router.post('/send-payslip', asyncHandler(async (req, res) => {
         driverName: payslip.driver_name,
         year: payslip.year,
         month: payslip.month,
-        pdfBuffer
+        pdfBuffer,
+        customMessage: customMessage || null
     });
     
     res.json({

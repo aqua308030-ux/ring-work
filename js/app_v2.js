@@ -1199,14 +1199,23 @@ async function handleEmailFormSubmit(e) {
     const payslip = currentPayslips.find(p => p.id === selectedPayslipId);
     if (!payslip) return;
     
+    const driverEmail = document.getElementById('email-to').value;
+    const customMessage = document.getElementById('email-message').value;
+    
+    // バックエンドAPIが期待する形式にデータを整形
     const emailData = {
-        to: document.getElementById('email-to').value,
-        subject: document.getElementById('email-subject').value,
-        message: document.getElementById('email-message').value,
-        payslip: payslip
+        payslip: payslip,
+        driverEmail: driverEmail,
+        customMessage: customMessage
     };
     
     try {
+        // ローディング表示
+        const submitBtn = e.target.querySelector('button[type="submit"]');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 送信中...';
+        
         // バックエンドAPIにメール送信リクエスト
         const response = await fetch('/api/email/send-payslip', {
             method: 'POST',
@@ -1216,16 +1225,20 @@ async function handleEmailFormSubmit(e) {
             body: JSON.stringify(emailData)
         });
         
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalText;
+        
         if (!response.ok) {
-            throw new Error('メール送信に失敗しました');
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'メール送信に失敗しました');
         }
         
         const result = await response.json();
-        alert('メールを送信しました');
+        alert(`メールを送信しました\n\n送信先: ${driverEmail}\n明細: ${payslip.year}年${payslip.month}月分\nPDF添付: あり`);
         hideModal('email-modal');
     } catch (error) {
         console.error('メール送信エラー:', error);
-        alert('メール送信に失敗しました。メールサーバーの設定を確認してください。\n\n注意: この機能を使用するには、バックエンドサーバーでメール設定が必要です。');
+        alert(`メール送信に失敗しました\n\nエラー: ${error.message}\n\n対処方法:\n1. メールアドレスが正しいか確認\n2. バックエンドサーバーが起動しているか確認\n3. .envファイルのメール設定を確認\n   (SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS)`);
     }
 }
 
