@@ -37,6 +37,9 @@
             <button class="tab-btn" data-tab="payslips">
                 <i class="fas fa-list"></i> 明細一覧
             </button>
+            <button class="tab-btn" data-tab="chat">
+                <i class="fas fa-comments"></i> チャット
+            </button>
         </nav>
 
         <!-- タブコンテンツ -->
@@ -263,6 +266,40 @@
             </div>
             
             <div id="payslips-list" class="cards-grid"></div>
+        </div>
+
+        <!-- チャットタブ -->
+        <div class="tab-content" id="chat-tab">
+            <div class="section-header">
+                <h2>ドライバーチャット</h2>
+            </div>
+            
+            <div class="chat-container">
+                <div class="chat-sidebar">
+                    <div class="chat-search">
+                        <input type="text" id="chat-search-input" placeholder="ドライバーを検索...">
+                    </div>
+                    <div id="chat-driver-list" class="chat-driver-list"></div>
+                </div>
+                
+                <div class="chat-main">
+                    <div id="chat-header" class="chat-header">
+                        <div class="chat-header-info">
+                            <i class="fas fa-comments"></i>
+                            <span>ドライバーを選択してください</span>
+                        </div>
+                    </div>
+                    
+                    <div id="chat-messages" class="chat-messages"></div>
+                    
+                    <div class="chat-input-area">
+                        <textarea id="chat-input" placeholder="メッセージを入力..." rows="3"></textarea>
+                        <button class="btn btn-primary" id="send-message-btn">
+                            <i class="fas fa-paper-plane"></i> 送信
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

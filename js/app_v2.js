@@ -197,9 +197,37 @@ function renderDriversList() {
         return;
     }
     
-    container.innerHTML = currentDrivers
-        .filter(driver => driver.active !== false)
-        .map(driver => `
+    const activeDrivers = currentDrivers.filter(driver => driver.active !== false);
+    const isCompactMode = activeDrivers.length > 10;
+    
+    if (isCompactMode) {
+        // 10人超えたらコンパクト表示（名前のみ）
+        container.innerHTML = `
+            <div class="compact-driver-list">
+                <p class="info-message">
+                    <i class="fas fa-info-circle"></i> 
+                    ドライバーが10人以上登録されています。簡易表示モードです。
+                </p>
+                <div class="compact-grid">
+                    ${activeDrivers.map(driver => `
+                        <div class="compact-card fade-in">
+                            <div class="compact-name">${driver.name || '名前未設定'}</div>
+                            <div class="compact-actions">
+                                <button class="icon-btn" onclick="editDriver('${driver.id}')" title="編集">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="icon-btn danger" onclick="deleteDriver('${driver.id}')" title="削除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    } else {
+        // 10人以下は通常表示
+        container.innerHTML = activeDrivers.map(driver => `
             <div class="card fade-in">
                 <div class="card-header">
                     <div class="card-title">${driver.name || '名前未設定'}</div>
@@ -220,6 +248,7 @@ function renderDriversList() {
                 </div>
             </div>
         `).join('');
+    }
 }
 
 /**
