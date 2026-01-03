@@ -762,18 +762,37 @@
                     </select>
                 </div>
 
+                <!-- LINE Bot案内 -->
+                <div class="alert alert-success mt-4">
+                    <span class="alert-icon">💬</span>
+                    <div class="alert-content">
+                        <div class="alert-title">LINEで日報を送信！</div>
+                        <div class="alert-message" style="font-size: 13px; margin-top: 8px;">
+                            LINE公式アカウントに友だち追加すると、LINEから直接日報を送信できます。<br>
+                            <br>
+                            <strong>LINE公式アカウントID:</strong><br>
+                            <div style="background: white; padding: 12px; border-radius: 8px; margin: 8px 0; font-size: 16px; font-weight: 600; text-align: center; color: var(--success);">
+                                @539ewahf
+                            </div>
+                            <div style="font-size: 12px; color: var(--gray-600); margin-top: 8px;">
+                                ※LINEアプリから「@539ewahf」で検索して友だち追加してください
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- LINE通知設定 -->
-                <div class="card mt-4" style="background: var(--bg-secondary); border: 2px solid var(--success); padding: 20px;">
+                <div class="card mt-4" style="background: var(--bg-secondary); border: 2px solid var(--info); padding: 20px;">
                     <div class="card-header" style="border: none; padding-bottom: 12px; margin-bottom: 16px;">
-                        <div class="card-icon" style="background: var(--success);">💬</div>
+                        <div class="card-icon" style="background: var(--info);">🔔</div>
                         <div>
-                            <div class="card-title">LINE通知設定</div>
+                            <div class="card-title">LINE Notify設定（任意）</div>
                             <div class="card-subtitle">日報提出時にLINEで通知を受け取れます</div>
                         </div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">LINE通知トークン（任意）</label>
+                        <label class="form-label">LINE Notifyトークン（任意）</label>
                         <input type="text" id="line-token" class="form-input" placeholder="LINE Notifyのトークンを入力">
                         <div class="form-hint">
                             <a href="https://notify-bot.line.me/my/" target="_blank" style="color: var(--primary); text-decoration: none;">LINE Notifyからトークンを取得 →</a>
@@ -934,7 +953,12 @@
                     <div class="alert-content">
                         <div class="alert-title">LINEで日報を送信できます！</div>
                         <div class="alert-message" style="font-size: 13px; margin-top: 8px;">
-                            LINE Botに友だち追加すると、LINEから直接日報を送信できます。<br>
+                            LINE公式アカウントに友だち追加すると、LINEから直接日報を送信できます。<br>
+                            <br>
+                            <strong>LINE公式アカウントID:</strong><br>
+                            <div style="background: var(--gray-50); padding: 12px; border-radius: 8px; margin: 8px 0; font-size: 16px; font-weight: 600; text-align: center; color: var(--primary);">
+                                @539ewahf
+                            </div>
                             <br>
                             <strong>送信例:</strong><br>
                             ヤマト30<br>

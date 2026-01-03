@@ -4,30 +4,33 @@
 
 ドライバーは、LINEから簡単に日報を送信できます！
 
+**LINE公式アカウント**: `@539ewahf`
+
 ---
 
 ## 🚀 セットアップ手順
 
-### 1. LINE Developers コンソールにアクセス
+### 1. LINE公式アカウント（既存）
+
+すでに公式アカウントがあります：
+
+- **LINE ID**: `@539ewahf`
+- **アカウント名**: ACE Express（確認してください）
+
+### 2. LINE Developers コンソールにアクセス
+
+既存の公式アカウントをMessaging APIに変換する必要があります。
 
 https://developers.line.biz/console/
 
-### 2. 新しいプロバイダーを作成
+### 3. 既存アカウントをMessaging API対応に変更
 
-1. 「Create」ボタンをクリック
-2. プロバイダー名を入力（例: 「ACE Express」）
-3. 「Create」をクリック
-
-### 3. Messaging API チャネルを作成
-
-1. 「Create a new channel」をクリック
-2. 「Messaging API」を選択
-3. 必要情報を入力:
-   - Channel name: `Carry Note`
-   - Channel description: `ドライバー日報Bot`
-   - Category: `Business Tools`
-   - Subcategory: 任意
-4. 利用規約に同意して「Create」
+1. LINE Official Account Manager にログイン
+2. 対象のアカウント（@539ewahf）を選択
+3. 「設定」→「Messaging API」
+4. 「Messaging APIを利用する」をクリック
+5. プロバイダーを選択または新規作成
+   - プロバイダー名: 「ACE Express」（推奨）
 
 ### 4. チャネル設定
 
@@ -70,9 +73,19 @@ LINE_CHANNEL_ACCESS_TOKEN=YOUR_CHANNEL_ACCESS_TOKEN
 
 ### 友だち追加
 
-1. LINE Developers コンソールから「QRコード」を表示
-2. ドライバーにQRコードをスキャンしてもらう
-3. Botを友だち追加
+ドライバーに以下の方法で友だち追加してもらいます：
+
+**方法1: LINE IDで検索**
+1. LINEアプリを開く
+2. 「友だち追加」→「検索」
+3. 「@539ewahf」を入力して検索
+4. 友だち追加
+
+**方法2: QRコード**
+1. LINE Official Account Manager にログイン
+2. 対象のアカウント（@539ewahf）を選択
+3. 「友だち追加」→「QRコード」を表示
+4. ドライバーにスキャンしてもらう
 
 ### 日報の送り方
 
