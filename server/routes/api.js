@@ -12,8 +12,26 @@ const router = express.Router();
 const storage = {
     drivers_v3: new Map(),
     delivery_types: new Map(),
-    payslips_v4: new Map()
+    payslips_v4: new Map(),
+    companies: new Map(),
+    daily_reports: new Map()
 };
+
+// 初期企業コードを生成
+const initializeCompanies = () => {
+    if (storage.companies.size === 0) {
+        const defaultCompany = {
+            id: 'company-default',
+            code: 'RING2025',
+            name: 'リング軽貨物',
+            created_at: new Date().toISOString()
+        };
+        storage.companies.set(defaultCompany.id, defaultCompany);
+        console.log(`✅ デフォルト企業コードを生成しました: ${defaultCompany.code}`);
+    }
+};
+
+initializeCompanies();
 
 /**
  * データ取得（汎用）
@@ -163,6 +181,178 @@ router.get('/driver/info', authMiddleware, asyncHandler(async (req, res) => {
     const { bank_name, branch_name, account_number, ...safeInfo } = driver;
     
     res.json(safeInfo);
+}));
+
+/**
+ * 企業コード検証
+ * POST /api/verify-company-code
+ */
+router.post('/verify-company-code', asyncHandler(async (req, res) => {
+    const { code } = req.body;
+    
+    if (!code) {
+        return res.status(400).json({
+            error: 'Bad Request',
+            message: '企業コードが必要です'
+        });
+    }
+    
+    // 企業コードを検索
+    const companies = Array.from(storage.companies.values());
+    const company = companies.find(c => c.code === code.toUpperCase());
+    
+    if (!company) {
+        return res.status(404).json({
+            error: 'Not Found',
+            message: '企業コードが見つかりません'
+        });
+    }
+    
+    res.json({
+        success: true,
+        company: {
+            id: company.id,
+            name: company.name,
+            code: company.code
+        }
+    });
+}));
+
+/**
+ * ドライバー自己登録
+ * POST /api/driver-register
+ */
+router.post('/driver-register', asyncHandler(async (req, res) => {
+    const { companyCode, name, phone, email, vehicleNumber } = req.body;
+    
+    // バリデーション
+    if (!companyCode || !name || !phone) {
+        return res.status(400).json({
+            error: 'Bad Request',
+            message: '企業コード、氏名、電話番号は必須です'
+        });
+    }
+    
+    // 企業コード検証
+    const companies = Array.from(storage.companies.values());
+    const company = companies.find(c => c.code === companyCode.toUpperCase());
+    
+    if (!company) {
+        return res.status(404).json({
+            error: 'Not Found',
+            message: '企業コードが見つかりません'
+        });
+    }
+    
+    // ドライバーIDを生成
+    const driverId = `driver-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // ドライバーデータを作成
+    const driverData = {
+        id: driverId,
+        company_id: company.id,
+        name,
+        phone,
+        email: email || '',
+        vehicle_number: vehicleNumber || '',
+        active: true,
+        has_lease: false,
+        insurance_fee: 0,
+        vehicle_lease_fee: 0,
+        self_registered: true,
+        registered_at: new Date().toISOString()
+    };
+    
+    // ドライバーを登録
+    storage.drivers_v3.set(driverId, driverData);
+    
+    res.status(201).json({
+        success: true,
+        message: 'ドライバー登録が完了しました',
+        driver: {
+            id: driverId,
+            name,
+            phone,
+            email,
+            vehicle_number: vehicleNumber
+        }
+    });
+}));
+
+/**
+ * 日報登録
+ * POST /api/daily-reports
+ */
+router.post('/daily-reports', asyncHandler(async (req, res) => {
+    const { driverId, date, workDetails, notes } = req.body;
+    
+    // バリデーション
+    if (!driverId || !date || !workDetails) {
+        return res.status(400).json({
+            error: 'Bad Request',
+            message: 'ドライバーID、日付、作業明細は必須です'
+        });
+    }
+    
+    // ドライバーの存在確認
+    const driver = storage.drivers_v3.get(driverId);
+    if (!driver) {
+        return res.status(404).json({
+            error: 'Not Found',
+            message: 'ドライバーが見つかりません'
+        });
+    }
+    
+    // 日報IDを生成
+    const reportId = `report-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    // 日報データを作成
+    const reportData = {
+        id: reportId,
+        driver_id: driverId,
+        driver_name: driver.name,
+        date,
+        work_details: workDetails,
+        notes: notes || '',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+    };
+    
+    // 日報を保存
+    storage.daily_reports.set(reportId, reportData);
+    
+    res.status(201).json({
+        success: true,
+        message: '日報を登録しました',
+        report: reportData
+    });
+}));
+
+/**
+ * 日報一覧取得（ドライバー用）
+ * GET /api/daily-reports/:driverId
+ */
+router.get('/daily-reports/:driverId', asyncHandler(async (req, res) => {
+    const { driverId } = req.params;
+    
+    if (!driverId) {
+        return res.status(400).json({
+            error: 'Bad Request',
+            message: 'ドライバーIDが必要です'
+        });
+    }
+    
+    // ドライバーの日報を取得
+    const allReports = Array.from(storage.daily_reports.values());
+    const driverReports = allReports.filter(r => r.driver_id === driverId);
+    
+    // 日付の降順でソート
+    driverReports.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    res.json({
+        items: driverReports,
+        total: driverReports.length
+    });
 }));
 
 module.exports = router;

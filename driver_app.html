@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ドライバー日報アプリ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #2563eb;
+            --primary-dark: #1e40af;
+            --success-color: #10b981;
+            --danger-color: #ef4444;
+            --warning-color: #f59e0b;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: var(--gray-50);
+            color: var(--gray-900);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: var(--primary-color);
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--gray-800);
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--gray-700);
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: var(--gray-200);
+            color: var(--gray-700);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        .info-box {
+            background: var(--gray-100);
+            border-left: 4px solid var(--primary-color);
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .info-box p {
+            font-size: 14px;
+            color: var(--gray-700);
+            margin: 4px 0;
+        }
+
+        .work-detail-item {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+
+        .work-detail-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .work-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .work-detail-header select {
+            flex: 1;
+            margin-right: 8px;
+        }
+
+        .btn-remove {
+            background: var(--danger-color);
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .work-detail-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .work-detail-fields input {
+            padding: 8px;
+            font-size: 13px;
+        }
+
+        .add-work-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 16px;
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: 1px dashed var(--gray-300);
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+            justify-content: center;
+            margin-top: 12px;
+        }
+
+        .add-work-btn:hover {
+            background: var(--gray-200);
+        }
+
+        .report-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .report-item {
+            background: white;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .report-item:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+        }
+
+        .report-date {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 8px;
+        }
+
+        .report-summary {
+            font-size: 14px;
+            color: var(--gray-600);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: var(--gray-500);
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-item .icon {
+            font-size: 24px;
+        }
+
+        .content-wrapper {
+            padding-bottom: 80px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: var(--gray-500);
+        }
+
+        .error-message {
+            background: #fee2e2;
+            border-left: 4px solid var(--danger-color);
+            padding: 12px;
+            border-radius: 8px;
+            color: #991b1b;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .success-message {
+            background: #d1fae5;
+            border-left: 4px solid var(--success-color);
+            padding: 12px;
+            border-radius: 8px;
+            color: #065f46;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .company-info {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .company-logo {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+
+        .company-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+    </style>
+</head>
+<body>
+    <div class="content-wrapper">
+        <!-- 企業コード入力画面 -->
+        <div id="company-code-screen" class="screen active">
+            <div class="container">
+                <div class="header">
+                    <h1>🚚 ドライバー日報アプリ</h1>
+                    <p>企業コードを入力してください</p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">企業コード入力</div>
+                    <div id="company-code-error" class="error-message" style="display: none;"></div>
+                    
+                    <div class="form-group">
+                        <label for="company-code">企業コード</label>
+                        <input type="text" id="company-code" placeholder="例: RING2025" required>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="verifyCompanyCode()">
+                        次へ
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ドライバー登録画面 -->
+        <div id="driver-register-screen" class="screen">
+            <div class="container">
+                <div class="header">
+                    <div class="company-logo">🏢</div>
+                    <div class="company-name" id="company-name-display"></div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">ドライバー登録</div>
+                    <div id="register-error" class="error-message" style="display: none;"></div>
+                    
+                    <div class="form-group">
+                        <label for="driver-name">氏名 *</label>
+                        <input type="text" id="driver-name" placeholder="例: 山田太郎" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="driver-phone">電話番号 *</label>
+                        <input type="tel" id="driver-phone" placeholder="例: 090-1234-5678" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="driver-email">メールアドレス</label>
+                        <input type="email" id="driver-email" placeholder="例: driver@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="driver-vehicle">車両ナンバー</label>
+                        <input type="text" id="driver-vehicle" placeholder="例: 品川 500 あ 12-34">
+                    </div>
+
+                    <button class="btn btn-primary" onclick="registerDriver()">
+                        登録する
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日報入力画面 -->
+        <div id="report-input-screen" class="screen">
+            <div class="container">
+                <div class="header">
+                    <h1>📝 日報入力</h1>
+                    <p id="driver-name-header"></p>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">本日の作業</div>
+                    <div id="report-error" class="error-message" style="display: none;"></div>
+                    <div id="report-success" class="success-message" style="display: none;"></div>
+                    
+                    <div class="form-group">
+                        <label for="report-date">日付</label>
+                        <input type="date" id="report-date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>作業明細</label>
+                        <div id="work-details-container"></div>
+                        <button class="add-work-btn" onclick="addWorkDetail()">
+                            ➕ 作業を追加
+                        </button>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="report-notes">メモ・備考</label>
+                        <textarea id="report-notes" placeholder="本日の気づきや連絡事項など..."></textarea>
+                    </div>
+
+                    <button class="btn btn-primary" onclick="submitReport()">
+                        日報を提出する
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日報一覧画面 -->
+        <div id="report-list-screen" class="screen">
+            <div class="container">
+                <div class="header">
+                    <h1>📋 提出済み日報</h1>
+                    <p id="driver-name-header-list"></p>
+                </div>
+
+                <div class="card">
+                    <div id="report-list-loading" class="loading">読み込み中...</div>
+                    <div id="report-list-container" class="report-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ボトムナビゲーション -->
+    <div class="bottom-nav" id="bottom-nav" style="display: none;">
+        <div class="nav-item active" data-screen="report-input-screen">
+            <span class="icon">📝</span>
+            <span>日報入力</span>
+        </div>
+        <div class="nav-item" data-screen="report-list-screen">
+            <span class="icon">📋</span>
+            <span>履歴</span>
+        </div>
+    </div>
+
+    <script>
+        // グローバル変数
+        let currentCompany = null;
+        let currentDriver = null;
+        let deliveryTypes = [];
+        let workDetailCounter = 0;
+
+        // 画面切り替え
+        function switchScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+
+            // ナビゲーション更新
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.screen === screenId) {
+                    item.classList.add('active');
+                }
+            });
+        }
+
+        // ナビゲーションクリックイベント
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                const screenId = item.dataset.screen;
+                switchScreen(screenId);
+                if (screenId === 'report-list-screen') {
+                    loadReports();
+                }
+            });
+        });
+
+        // 企業コード検証
+        async function verifyCompanyCode() {
+            const code = document.getElementById('company-code').value.trim();
+            const errorDiv = document.getElementById('company-code-error');
+
+            if (!code) {
+                errorDiv.textContent = '企業コードを入力してください';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/verify-company-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentCompany = data.company;
+                    document.getElementById('company-name-display').textContent = data.company.name;
+                    errorDiv.style.display = 'none';
+                    switchScreen('driver-register-screen');
+                } else {
+                    errorDiv.textContent = data.message || '企業コードが見つかりません';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = '通信エラーが発生しました';
+                errorDiv.style.display = 'block';
+                console.error(error);
+            }
+        }
+
+        // ドライバー登録
+        async function registerDriver() {
+            const name = document.getElementById('driver-name').value.trim();
+            const phone = document.getElementById('driver-phone').value.trim();
+            const email = document.getElementById('driver-email').value.trim();
+            const vehicleNumber = document.getElementById('driver-vehicle').value.trim();
+            const errorDiv = document.getElementById('register-error');
+
+            if (!name || !phone) {
+                errorDiv.textContent = '氏名と電話番号は必須です';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/driver-register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        companyCode: currentCompany.code,
+                        name,
+                        phone,
+                        email,
+                        vehicleNumber
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    currentDriver = data.driver;
+                    localStorage.setItem('driverId', data.driver.id);
+                    localStorage.setItem('driverName', data.driver.name);
+                    localStorage.setItem('companyId', currentCompany.id);
+                    localStorage.setItem('companyName', currentCompany.name);
+                    
+                    document.getElementById('driver-name-header').textContent = data.driver.name;
+                    document.getElementById('driver-name-header-list').textContent = data.driver.name;
+                    document.getElementById('bottom-nav').style.display = 'flex';
+                    
+                    errorDiv.style.display = 'none';
+                    await loadDeliveryTypes();
+                    initializeReportForm();
+                    switchScreen('report-input-screen');
+                } else {
+                    errorDiv.textContent = data.message || '登録に失敗しました';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = '通信エラーが発生しました';
+                errorDiv.style.display = 'block';
+                console.error(error);
+            }
+        }
+
+        // 配送タイプ読み込み
+        async function loadDeliveryTypes() {
+            try {
+                const response = await fetch('/api/tables/delivery_types');
+                const data = await response.json();
+                deliveryTypes = data.items.filter(type => type.active);
+            } catch (error) {
+                console.error('配送タイプの読み込みに失敗しました:', error);
+            }
+        }
+
+        // 日報フォーム初期化
+        function initializeReportForm() {
+            // 今日の日付を設定
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('report-date').value = today;
+
+            // 初期作業明細を1つ追加
+            addWorkDetail();
+        }
+
+        // 作業明細を追加
+        function addWorkDetail() {
+            const container = document.getElementById('work-details-container');
+            const detailId = `work-detail-${workDetailCounter++}`;
+
+            const detailHtml = `
+                <div class="work-detail-item" id="${detailId}">
+                    <div class="work-detail-header">
+                        <select class="delivery-type-select" required>
+                            <option value="">配送タイプを選択</option>
+                            ${deliveryTypes.map(type => `
+                                <option value="${type.id}" data-price="${type.unit_price}">
+                                    ${type.name} (¥${type.unit_price}/個)
+                                </option>
+                            `).join('')}
+                        </select>
+                        <button type="button" class="btn-remove" onclick="removeWorkDetail('${detailId}')">削除</button>
+                    </div>
+                    <div class="work-detail-fields">
+                        <input type="number" class="quantity-input" placeholder="個数" min="0" required>
+                        <input type="number" class="amount-input" placeholder="金額" readonly>
+                    </div>
+                </div>
+            `;
+
+            container.insertAdjacentHTML('beforeend', detailHtml);
+
+            // イベントリスナーを追加
+            const newDetail = document.getElementById(detailId);
+            const select = newDetail.querySelector('.delivery-type-select');
+            const quantityInput = newDetail.querySelector('.quantity-input');
+            const amountInput = newDetail.querySelector('.amount-input');
+
+            select.addEventListener('change', () => {
+                const option = select.options[select.selectedIndex];
+                const price = parseFloat(option.dataset.price) || 0;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                amountInput.value = price * quantity;
+            });
+
+            quantityInput.addEventListener('input', () => {
+                const option = select.options[select.selectedIndex];
+                const price = parseFloat(option.dataset.price) || 0;
+                const quantity = parseFloat(quantityInput.value) || 0;
+                amountInput.value = price * quantity;
+            });
+        }
+
+        // 作業明細を削除
+        function removeWorkDetail(detailId) {
+            const detail = document.getElementById(detailId);
+            if (detail) {
+                detail.remove();
+            }
+        }
+
+        // 日報提出
+        async function submitReport() {
+            const date = document.getElementById('report-date').value;
+            const notes = document.getElementById('report-notes').value.trim();
+            const errorDiv = document.getElementById('report-error');
+            const successDiv = document.getElementById('report-success');
+
+            errorDiv.style.display = 'none';
+            successDiv.style.display = 'none';
+
+            if (!date) {
+                errorDiv.textContent = '日付を選択してください';
+                errorDiv.style.display = 'block';
+                return;
+            }
+
+            // 作業明細を収集
+            const workDetails = [];
+            const detailItems = document.querySelectorAll('.work-detail-item');
+
+            for (const item of detailItems) {
+                const select = item.querySelector('.delivery-type-select');
+                const quantity = item.querySelector('.quantity-input').value;
+                const amount = item.querySelector('.amount-input').value;
+
+                if (!select.value || !quantity) {
+                    errorDiv.textContent = '配送タイプと個数を入力してください';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                const option = select.options[select.selectedIndex];
+                workDetails.push({
+                    delivery_type_id: select.value,
+                    delivery_type_name: option.text.split('(')[0].trim(),
+                    quantity: parseInt(quantity),
+                    unit_price: parseFloat(option.dataset.price),
+                    amount: parseFloat(amount)
+                });
+            }
+
+            try {
+                const response = await fetch('/api/daily-reports', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        driverId: currentDriver.id,
+                        date,
+                        workDetails,
+                        notes
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    successDiv.textContent = '日報を提出しました！';
+                    successDiv.style.display = 'block';
+                    
+                    // フォームをリセット
+                    setTimeout(() => {
+                        document.getElementById('work-details-container').innerHTML = '';
+                        document.getElementById('report-notes').value = '';
+                        workDetailCounter = 0;
+                        initializeReportForm();
+                        successDiv.style.display = 'none';
+                    }, 2000);
+                } else {
+                    errorDiv.textContent = data.message || '日報の提出に失敗しました';
+                    errorDiv.style.display = 'block';
+                }
+            } catch (error) {
+                errorDiv.textContent = '通信エラーが発生しました';
+                errorDiv.style.display = 'block';
+                console.error(error);
+            }
+        }
+
+        // 日報一覧読み込み
+        async function loadReports() {
+            const loadingDiv = document.getElementById('report-list-loading');
+            const containerDiv = document.getElementById('report-list-container');
+
+            loadingDiv.style.display = 'block';
+            containerDiv.innerHTML = '';
+
+            try {
+                const response = await fetch(`/api/daily-reports/${currentDriver.id}`);
+                const data = await response.json();
+
+                loadingDiv.style.display = 'none';
+
+                if (data.items.length === 0) {
+                    containerDiv.innerHTML = '<p style="text-align: center; color: var(--gray-500);">まだ日報がありません</p>';
+                    return;
+                }
+
+                data.items.forEach(report => {
+                    const totalAmount = report.work_details.reduce((sum, detail) => sum + detail.amount, 0);
+                    const reportHtml = `
+                        <div class="report-item">
+                            <div class="report-date">${formatDate(report.date)}</div>
+                            <div class="report-summary">
+                                合計: ¥${totalAmount.toLocaleString()} 
+                                (${report.work_details.length}件)
+                            </div>
+                        </div>
+                    `;
+                    containerDiv.insertAdjacentHTML('beforeend', reportHtml);
+                });
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                containerDiv.innerHTML = '<p style="text-align: center; color: var(--danger-color);">読み込みに失敗しました</p>';
+                console.error(error);
+            }
+        }
+
+        // 日付フォーマット
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            const weekday = weekdays[date.getDay()];
+            return `${year}年${month}月${day}日 (${weekday})`;
+        }
+
+        // 初期化時に保存済みドライバー情報をチェック
+        window.addEventListener('DOMContentLoaded', async () => {
+            const savedDriverId = localStorage.getItem('driverId');
+            const savedDriverName = localStorage.getItem('driverName');
+            const savedCompanyId = localStorage.getItem('companyId');
+            const savedCompanyName = localStorage.getItem('companyName');
+
+            if (savedDriverId && savedDriverName && savedCompanyId && savedCompanyName) {
+                currentDriver = {
+                    id: savedDriverId,
+                    name: savedDriverName
+                };
+                currentCompany = {
+                    id: savedCompanyId,
+                    name: savedCompanyName
+                };
+
+                document.getElementById('driver-name-header').textContent = savedDriverName;
+                document.getElementById('driver-name-header-list').textContent = savedDriverName;
+                document.getElementById('bottom-nav').style.display = 'flex';
+
+                await loadDeliveryTypes();
+                initializeReportForm();
+                switchScreen('report-input-screen');
+            }
+        });
+
+        // Enterキーでフォーム送信
+        document.getElementById('company-code').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') verifyCompanyCode();
+        });
+    </script>
+</body>
+</html>
