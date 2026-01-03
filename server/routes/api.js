@@ -197,9 +197,9 @@ router.post('/verify-company-code', asyncHandler(async (req, res) => {
         });
     }
     
-    // 企業コードを検索
+    // 企業コードを検索（大文字小文字を区別しない）
     const companies = Array.from(storage.companies.values());
-    const company = companies.find(c => c.code === code.toUpperCase());
+    const company = companies.find(c => c.code.toUpperCase() === code.toUpperCase());
     
     if (!company) {
         return res.status(404).json({
@@ -246,9 +246,9 @@ router.post('/driver-register', asyncHandler(async (req, res) => {
         });
     }
     
-    // 企業コード検証
+    // 企業コード検証（大文字小文字を区別しない）
     const companies = Array.from(storage.companies.values());
-    const company = companies.find(c => c.code === companyCode.toUpperCase());
+    const company = companies.find(c => c.code.toUpperCase() === companyCode.toUpperCase());
     
     if (!company) {
         return res.status(404).json({

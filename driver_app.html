@@ -363,6 +363,11 @@
                     <div class="card-title">企業コード入力</div>
                     <div id="company-code-error" class="error-message" style="display: none;"></div>
                     
+                    <div class="info-box">
+                        <p>📌 企業コードを入力して開始してください</p>
+                        <p style="font-size: 12px; margin-top: 4px;">※ 企業コードは会社から提供されます</p>
+                    </div>
+                    
                     <div class="form-group">
                         <label for="company-code">企業コード</label>
                         <input type="text" id="company-code" placeholder="例: ACEexpress" required autocomplete="off">
@@ -775,6 +780,17 @@
             errorDiv.style.display = 'none';
             successDiv.style.display = 'none';
 
+            if (!currentDriver || !currentDriver.id) {
+                errorDiv.textContent = 'ドライバー情報が見つかりません。再度登録してください。';
+                errorDiv.style.display = 'block';
+                // LocalStorageをクリアして登録画面に戻る
+                localStorage.clear();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 2000);
+                return;
+            }
+
             if (!date) {
                 errorDiv.textContent = '日付を選択してください';
                 errorDiv.style.display = 'block';
@@ -895,6 +911,19 @@
             return `${year}年${month}月${day}日 (${weekday})`;
         }
 
+        // ドライバーの存在確認
+        async function verifyDriver(driverId) {
+            try {
+                const response = await fetch(`/api/tables/drivers_v3`);
+                const data = await response.json();
+                const driver = data.items.find(d => d.id === driverId);
+                return driver !== undefined;
+            } catch (error) {
+                console.error('ドライバー確認エラー:', error);
+                return false;
+            }
+        }
+
         // 初期化時に保存済みドライバー情報をチェック
         window.addEventListener('DOMContentLoaded', async () => {
             const savedDriverId = localStorage.getItem('driverId');
@@ -903,6 +932,16 @@
             const savedCompanyName = localStorage.getItem('companyName');
 
             if (savedDriverId && savedDriverName && savedCompanyId && savedCompanyName) {
+                // ドライバーの存在確認
+                const driverExists = await verifyDriver(savedDriverId);
+                
+                if (!driverExists) {
+                    // ドライバーが存在しない場合、LocalStorageをクリア
+                    console.log('ドライバーが見つかりません。再登録が必要です。');
+                    localStorage.clear();
+                    return;
+                }
+
                 currentDriver = {
                     id: savedDriverId,
                     name: savedDriverName
