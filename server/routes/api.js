@@ -391,3 +391,4 @@ router.get('/daily-reports/:driverId', asyncHandler(async (req, res) => {
 }));
 
 module.exports = router;
+module.exports.storage = storage;
