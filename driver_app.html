@@ -208,12 +208,11 @@
         }
 
         .work-detail-fields {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            display: block;
         }
 
         .work-detail-fields input {
+            width: 100%;
             padding: 8px;
             font-size: 13px;
         }
@@ -366,7 +365,7 @@
                     
                     <div class="form-group">
                         <label for="company-code">企業コード</label>
-                        <input type="text" id="company-code" placeholder="例: RING2025" required>
+                        <input type="text" id="company-code" placeholder="例: ACEexpress" required autocomplete="off">
                     </div>
 
                     <button class="btn btn-primary" onclick="verifyCompanyCode()">
@@ -406,6 +405,55 @@
                     <div class="form-group">
                         <label for="driver-vehicle">車両ナンバー</label>
                         <input type="text" id="driver-vehicle" placeholder="例: 品川 500 あ 12-34">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="vehicle-ownership">車両区分 *</label>
+                        <select id="vehicle-ownership" required onchange="toggleDocumentFields()">
+                            <option value="">選択してください</option>
+                            <option value="lease">リース</option>
+                            <option value="owned">個人所有</option>
+                        </select>
+                    </div>
+
+                    <!-- 個人所有の場合の書類アップロード -->
+                    <div id="document-fields" style="display: none;">
+                        <div class="info-box">
+                            <p>📄 以下の書類を撮影してアップロードしてください</p>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="insurance-document">保険証券 *</label>
+                            <input type="file" id="insurance-document" accept="image/*" capture="environment">
+                            <small style="color: var(--gray-600); font-size: 12px;">※ 画像ファイルのみ</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="insurance-expiry">保険証券 有効期限 *</label>
+                            <input type="date" id="insurance-expiry" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inspection-document">車検証 *</label>
+                            <input type="file" id="inspection-document" accept="image/*" capture="environment">
+                            <small style="color: var(--gray-600); font-size: 12px;">※ 画像ファイルのみ</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="inspection-expiry">車検証 有効期限 *</label>
+                            <input type="date" id="inspection-expiry" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="liability-document">自賠責保険証 *</label>
+                            <input type="file" id="liability-document" accept="image/*" capture="environment">
+                            <small style="color: var(--gray-600); font-size: 12px;">※ 画像ファイルのみ</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="liability-expiry">自賠責保険証 有効期限 *</label>
+                            <input type="date" id="liability-expiry" required>
+                        </div>
                     </div>
 
                     <button class="btn btn-primary" onclick="registerDriver()">
@@ -549,31 +597,88 @@
             }
         }
 
+        // 車両区分変更時の書類フィールド表示切り替え
+        function toggleDocumentFields() {
+            const ownership = document.getElementById('vehicle-ownership').value;
+            const documentFields = document.getElementById('document-fields');
+            
+            if (ownership === 'owned') {
+                documentFields.style.display = 'block';
+            } else {
+                documentFields.style.display = 'none';
+            }
+        }
+
+        // 画像をBase64に変換
+        async function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
         // ドライバー登録
         async function registerDriver() {
             const name = document.getElementById('driver-name').value.trim();
             const phone = document.getElementById('driver-phone').value.trim();
             const email = document.getElementById('driver-email').value.trim();
             const vehicleNumber = document.getElementById('driver-vehicle').value.trim();
+            const vehicleOwnership = document.getElementById('vehicle-ownership').value;
             const errorDiv = document.getElementById('register-error');
 
-            if (!name || !phone) {
-                errorDiv.textContent = '氏名と電話番号は必須です';
+            if (!name || !phone || !vehicleOwnership) {
+                errorDiv.textContent = '氏名、電話番号、車両区分は必須です';
                 errorDiv.style.display = 'block';
                 return;
+            }
+
+            // 登録データを準備
+            const registerData = {
+                companyCode: currentCompany.code,
+                name,
+                phone,
+                email,
+                vehicleNumber,
+                vehicleOwnership
+            };
+
+            // 個人所有の場合、書類情報を追加
+            if (vehicleOwnership === 'owned') {
+                const insuranceDoc = document.getElementById('insurance-document').files[0];
+                const insuranceExpiry = document.getElementById('insurance-expiry').value;
+                const inspectionDoc = document.getElementById('inspection-document').files[0];
+                const inspectionExpiry = document.getElementById('inspection-expiry').value;
+                const liabilityDoc = document.getElementById('liability-document').files[0];
+                const liabilityExpiry = document.getElementById('liability-expiry').value;
+
+                if (!insuranceDoc || !insuranceExpiry || !inspectionDoc || !inspectionExpiry || !liabilityDoc || !liabilityExpiry) {
+                    errorDiv.textContent = 'すべての書類と有効期限を入力してください';
+                    errorDiv.style.display = 'block';
+                    return;
+                }
+
+                try {
+                    registerData.insuranceDocument = await fileToBase64(insuranceDoc);
+                    registerData.insuranceExpiry = insuranceExpiry;
+                    registerData.inspectionDocument = await fileToBase64(inspectionDoc);
+                    registerData.inspectionExpiry = inspectionExpiry;
+                    registerData.liabilityDocument = await fileToBase64(liabilityDoc);
+                    registerData.liabilityExpiry = liabilityExpiry;
+                } catch (error) {
+                    errorDiv.textContent = '画像の読み込みに失敗しました';
+                    errorDiv.style.display = 'block';
+                    console.error(error);
+                    return;
+                }
             }
 
             try {
                 const response = await fetch('/api/driver-register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        companyCode: currentCompany.code,
-                        name,
-                        phone,
-                        email,
-                        vehicleNumber
-                    })
+                    body: JSON.stringify(registerData)
                 });
 
                 const data = await response.json();
@@ -637,7 +742,7 @@
                             <option value="">配送タイプを選択</option>
                             ${deliveryTypes.map(type => `
                                 <option value="${type.id}" data-price="${type.unit_price}">
-                                    ${type.name} (¥${type.unit_price}/個)
+                                    ${type.name}
                                 </option>
                             `).join('')}
                         </select>
@@ -645,32 +750,11 @@
                     </div>
                     <div class="work-detail-fields">
                         <input type="number" class="quantity-input" placeholder="個数" min="0" required>
-                        <input type="number" class="amount-input" placeholder="金額" readonly>
                     </div>
                 </div>
             `;
 
             container.insertAdjacentHTML('beforeend', detailHtml);
-
-            // イベントリスナーを追加
-            const newDetail = document.getElementById(detailId);
-            const select = newDetail.querySelector('.delivery-type-select');
-            const quantityInput = newDetail.querySelector('.quantity-input');
-            const amountInput = newDetail.querySelector('.amount-input');
-
-            select.addEventListener('change', () => {
-                const option = select.options[select.selectedIndex];
-                const price = parseFloat(option.dataset.price) || 0;
-                const quantity = parseFloat(quantityInput.value) || 0;
-                amountInput.value = price * quantity;
-            });
-
-            quantityInput.addEventListener('input', () => {
-                const option = select.options[select.selectedIndex];
-                const price = parseFloat(option.dataset.price) || 0;
-                const quantity = parseFloat(quantityInput.value) || 0;
-                amountInput.value = price * quantity;
-            });
         }
 
         // 作業明細を削除
@@ -704,7 +788,6 @@
             for (const item of detailItems) {
                 const select = item.querySelector('.delivery-type-select');
                 const quantity = item.querySelector('.quantity-input').value;
-                const amount = item.querySelector('.amount-input').value;
 
                 if (!select.value || !quantity) {
                     errorDiv.textContent = '配送タイプと個数を入力してください';
@@ -713,12 +796,15 @@
                 }
 
                 const option = select.options[select.selectedIndex];
+                const unitPrice = parseFloat(option.dataset.price);
+                const amount = unitPrice * parseInt(quantity);
+                
                 workDetails.push({
                     delivery_type_id: select.value,
-                    delivery_type_name: option.text.split('(')[0].trim(),
+                    delivery_type_name: option.text.trim(),
                     quantity: parseInt(quantity),
-                    unit_price: parseFloat(option.dataset.price),
-                    amount: parseFloat(amount)
+                    unit_price: unitPrice,
+                    amount: amount
                 });
             }
 
@@ -779,13 +865,13 @@
                 }
 
                 data.items.forEach(report => {
-                    const totalAmount = report.work_details.reduce((sum, detail) => sum + detail.amount, 0);
+                    const totalQuantity = report.work_details.reduce((sum, detail) => sum + detail.quantity, 0);
                     const reportHtml = `
                         <div class="report-item">
                             <div class="report-date">${formatDate(report.date)}</div>
                             <div class="report-summary">
-                                合計: ¥${totalAmount.toLocaleString()} 
-                                (${report.work_details.length}件)
+                                合計配送数: ${totalQuantity}個 
+                                (${report.work_details.length}種類)
                             </div>
                         </div>
                     `;

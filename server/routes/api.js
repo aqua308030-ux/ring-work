@@ -22,8 +22,8 @@ const initializeCompanies = () => {
     if (storage.companies.size === 0) {
         const defaultCompany = {
             id: 'company-default',
-            code: 'RING2025',
-            name: 'リング軽貨物',
+            code: 'ACEexpress',
+            name: 'ACE Express',
             created_at: new Date().toISOString()
         };
         storage.companies.set(defaultCompany.id, defaultCompany);
@@ -223,13 +223,26 @@ router.post('/verify-company-code', asyncHandler(async (req, res) => {
  * POST /api/driver-register
  */
 router.post('/driver-register', asyncHandler(async (req, res) => {
-    const { companyCode, name, phone, email, vehicleNumber } = req.body;
+    const { 
+        companyCode, 
+        name, 
+        phone, 
+        email, 
+        vehicleNumber,
+        vehicleOwnership,
+        insuranceDocument,
+        insuranceExpiry,
+        inspectionDocument,
+        inspectionExpiry,
+        liabilityDocument,
+        liabilityExpiry
+    } = req.body;
     
     // バリデーション
-    if (!companyCode || !name || !phone) {
+    if (!companyCode || !name || !phone || !vehicleOwnership) {
         return res.status(400).json({
             error: 'Bad Request',
-            message: '企業コード、氏名、電話番号は必須です'
+            message: '企業コード、氏名、電話番号、車両区分は必須です'
         });
     }
     
@@ -256,12 +269,31 @@ router.post('/driver-register', asyncHandler(async (req, res) => {
         email: email || '',
         vehicle_number: vehicleNumber || '',
         active: true,
-        has_lease: false,
+        has_lease: vehicleOwnership === 'lease',
+        vehicle_ownership: vehicleOwnership,
         insurance_fee: 0,
         vehicle_lease_fee: 0,
         self_registered: true,
         registered_at: new Date().toISOString()
     };
+    
+    // 個人所有の場合、書類情報を追加
+    if (vehicleOwnership === 'owned') {
+        driverData.documents = {
+            insurance: {
+                file: insuranceDocument || null,
+                expiry: insuranceExpiry || null
+            },
+            inspection: {
+                file: inspectionDocument || null,
+                expiry: inspectionExpiry || null
+            },
+            liability: {
+                file: liabilityDocument || null,
+                expiry: liabilityExpiry || null
+            }
+        };
+    }
     
     // ドライバーを登録
     storage.drivers_v3.set(driverId, driverData);
@@ -274,7 +306,8 @@ router.post('/driver-register', asyncHandler(async (req, res) => {
             name,
             phone,
             email,
-            vehicle_number: vehicleNumber
+            vehicle_number: vehicleNumber,
+            vehicle_ownership: vehicleOwnership
         }
     });
 }));
